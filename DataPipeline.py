@@ -24,5 +24,7 @@ class DataPipeline:
         # à faire
         #self.visualizer.visualize(data)
 
-        return data
+        #renvoie la première ligne du dataframe pour vérification
+        return data.head(1)
+
         print("✅ Pipeline exécuté avec succès.")

@@ -1,18 +1,19 @@
 from DataPipeline import DataPipeline
 from src.collectors.APIDataCollector import APIDataCollector
+from utils.APIClient import APIClient, STATIONS
+
+# interface to choose station
+print("Available stations:")
+for station in STATIONS.keys():
+    print(f"- {station}")
+
+station_choice = input("Enter the station name: ").strip().lower()
+if station_choice not in STATIONS:
+    raise ValueError(f"Invalid station choice: {station_choice}")
 
 
-class APIClient:
-    base_url = "https://data.toulouse-metropole.fr/api/explore/v2.1/catalog/datasets/13-station-meteo-toulouse-pech-david/records"
-    params = {
-        "limit": 100,
-        "select": "id,type_de_station,temperature_en_degre_c,pluie,humidite,pression,heure_de_paris"
-    }
-
-
-client = APIClient()
+client = APIClient(STATIONS[station_choice])
 collector = APIDataCollector(client)
-
 
 pipeline = DataPipeline(
     collector=collector,
@@ -21,5 +22,4 @@ pipeline = DataPipeline(
     visualizer=None
 )
 
-
-pipeline.run(output_path="output.csv")
+print(pipeline.run(output_path="output.csv"))
