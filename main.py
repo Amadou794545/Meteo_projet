@@ -21,4 +21,5 @@ pipeline = DataPipeline(
     visualizer=None
 )
 
+
 pipeline.run(output_path="output.csv")
