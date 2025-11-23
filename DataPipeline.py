@@ -11,7 +11,9 @@ class DataPipeline:
 
     def run(self, output_path):
         # Étape 1 : Collecte
-        data = self.collector.collect_data()
+        data = self.collector.collect_data()# Exemple de mappage des données récupérées
+
+
 
         # Étape 2 : Nettoyage
         # à faire
