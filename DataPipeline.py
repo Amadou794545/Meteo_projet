@@ -1,9 +1,10 @@
+from src.cleaners.DataCleaner import DataCleaner
 from src.collectors.APIDataCollector import APIDataCollector
-
+from src.storage.CSVStorage import CSVStorage
 
 
 class DataPipeline:
-    def __init__(self, collector: APIDataCollector, cleaner, storage, visualizer):
+    def __init__(self, collector: APIDataCollector, cleaner: DataCleaner, storage: CSVStorage, visualizer):
         self.collector = collector
         self.cleaner = cleaner
         self.storage = storage
@@ -11,22 +12,19 @@ class DataPipeline:
 
     def run(self, output_path):
         # Étape 1 : Collecte
-        data = self.collector.collect_data()# Exemple de mappage des données récupérées
-
-
+        data = self.collector.collect_data()  # Exemple de mappage des données récupérées
 
         # Étape 2 : Nettoyage
-        # à faire
-        #data = self.cleaner.clean(data)
+        data = self.cleaner.clean_data(data)
 
         # Étape 3 : Sauvegarde
-        #self.storage.save(data, output_path)
+        self.storage.save_data(data=data)
 
         # Étape 4 : Visualisation
         # à faire
-        #self.visualizer.visualize(data)
+        # self.visualizer.visualize(data)
 
-        #renvoie la première ligne du dataframe pour vérification
+        # renvoie la première ligne du dataframe pour vérification
         return data.head(1)
 
         print("✅ Pipeline exécuté avec succès.")

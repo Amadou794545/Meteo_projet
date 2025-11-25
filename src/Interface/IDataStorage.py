@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
+import pandas as pd
+
 
 class IDataStorage(ABC):
     @abstractmethod
-    def save_data(self, key: str, data: dict) -> None:
+    def save_data(self,data: pd.DataFrame) -> None:
         pass
 
     @abstractmethod

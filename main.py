@@ -1,10 +1,11 @@
 from DataPipeline import DataPipeline
+from src.cleaners.DataCleaner import DataCleaner
 from src.collectors.APIDataCollector import APIDataCollector
 from src.models.MesureMeteo import MesureMeteo
 from src.models.StationMeteo import StationMeteo
+from src.storage.CSVStorage import CSVStorage
 from utils.APIClient import APIClient, STATIONS
 import pandas as pd
-
 
 # Interface pour choisir une station
 print("Stations disponibles :")
@@ -19,6 +20,8 @@ if station_choice not in STATIONS:
 # Initialisation du client API et du collecteur
 client = APIClient(STATIONS[station_choice])
 collector = APIDataCollector(client)
+# rajouter une colonne station_name dans collector.collect_data
+
 
 # Collecter les données
 print("Collecte des données...")
@@ -35,7 +38,6 @@ station = [StationMeteo(
     for _, rows in data.iterrows()
 ]
 
-
 # Transformer les données en objets MesureMeteo
 print("Transformation des données en objets MesureMeteo...")
 mesures = [
@@ -48,21 +50,33 @@ mesures = [
     )
     for _, row in data.iterrows()
 ]
-#convertir mesures en dataframe pandas
+# convertir mesures en dataframe pandas
 df_mesures = pd.DataFrame([vars(mesure) for mesure in mesures])
+
 # Afficher les mesures
 print("Affichage des mesures collectées :")
 print(df_mesures.head())
 
+# Initialisation du nettoyeur de données
+print("Initialisation du DataCleaner...")
+cleaner = DataCleaner(station_name=station_choice)
+
+print("sauvegarde des données nettoyées...")
+storage = CSVStorage(file_path="data/cleaned_data.csv", collector=collector)
+
 # Initialiser et exécuter le pipeline
 print("Exécution du pipeline de données...")
+
 pipeline = DataPipeline(
     collector=collector,
-    cleaner=None,
-    storage=None,
+    cleaner=cleaner,
+    storage=storage,
     visualizer=None
 )
 
+df = pd.read_csv("data/cleaned_data.csv")
+df.drop_duplicates(inplace=True)
+df.to_csv("data/cleaned_data.csv", index=False)
 
 result = pipeline.run(output_path="output.csv")
 print("Résultat de la première ligne du pipeline :")

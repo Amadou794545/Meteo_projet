@@ -1,28 +1,32 @@
+import os
+
 import pandas as pd
 from src.Interface.IDataStorage import IDataStorage
-import csv
+from src.collectors.APIDataCollector import APIDataCollector
 
 
 class CSVStorage(IDataStorage):
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, collector: APIDataCollector):
+
         self.file_path = file_path
+        self.collector = collector
 
-    def save(self, data: pd.DataFrame):
-        with open(self.file_path, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            for row in data:
-                writer.writerow(row)
-        print(f" Données sauvegardées dans : {self.file_path}")
+    def save_data(self, data: pd.DataFrame) -> None:
 
-    def load(self):
-        data = []
-        with open(self.file_path, mode='r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                data.append(row)
+        file_exists = os.path.isfile(self.file_path)
+
+        # Ajoute les données au fichier existant ou crée un nouveau fichier
+        data.to_csv(self.file_path, mode='a', header=not file_exists, index=False)
+        print(f"✅ Données sauvegardées dans : {self.file_path}")
+
+    def load_data(self, key: str) -> pd.DataFrame:
+
+        print("🔄 Rechargement des données depuis l'API...")
+        data = self.collector.collect_data()
+        print("✅ Données mises à jour récupérées depuis l'API.")
         return data
-        print(f" Données chargées depuis : {self.file_path}")
 
-    def delete(self):
+    def delete_data(self, key: str) -> None:
+
         open(self.file_path, 'w').close()
-        print(f" Données supprimées dans : {self.file_path}")
+        print(f"✅ Données supprimées dans : {self.file_path}")
