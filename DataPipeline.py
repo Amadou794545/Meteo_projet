@@ -22,8 +22,10 @@ class DataPipeline:
 
         # Étape 4 : Visualisation
         # à faire
-        # self.visualizer.visualize(data)
+        self.visualizer.visualize(data)
 
+        # faire les prédiction
+        #
         # renvoie la première ligne du dataframe pour vérification
         return data.head(1)
 

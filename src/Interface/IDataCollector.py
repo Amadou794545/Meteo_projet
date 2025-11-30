@@ -6,3 +6,4 @@ class IDataCollector(ABC):
     @abstractmethod
     def collect_data(self):
         pass
+

@@ -5,9 +5,15 @@ import pandas as pd
 from src.Interface.IDataCleaner import IDataCleaner
 
 
+def _separate_date_time(data):
+    data['date'] = pd.to_datetime(data['heure_de_paris']).dt.date
+    data['time'] = pd.to_datetime(data['heure_de_paris']).dt.time
+    return data
+
+
 class DataCleaner(IDataCleaner):
 
-    def __init__(self, temperature_range=(-50, 50), station_name="unknown_station"):
+    def __init__(self, temperature_range=(-10, 50), station_name="unknown_station"):
         self.temperature_min, self.temperature_max = temperature_range
         self.station_name = station_name
 
@@ -17,12 +23,11 @@ class DataCleaner(IDataCleaner):
         # Ajouter la colonne `nom_station`
         data['nom_station'] = self.station_name
 
-
-
         # Appliquer les étapes de nettoyage
         data = self._remove_missing_values(data)
         data = self._filter_outliers(data)
         data = self._remove_doublons(data)
+        data = self._separate_date_time(data)
 
         return data
 
@@ -38,3 +43,9 @@ class DataCleaner(IDataCleaner):
             (data['temperature_en_degre_c'] >= self.temperature_min) &
             (data['temperature_en_degre_c'] <= self.temperature_max)
             ]
+
+    # créer des colonnes pour la date et l'heure séparément
+    def _separate_date_time(self, data):
+        data['date'] = pd.to_datetime(data['heure_de_paris']).dt.date
+        data['time'] = pd.to_datetime(data['heure_de_paris']).dt.time
+        return data

@@ -4,5 +4,5 @@ import pandas as pd
 
 class IDataVisualisation(ABC):
     @abstractmethod
-    def render(self, data):
+    def visualize(self, data):
         pass

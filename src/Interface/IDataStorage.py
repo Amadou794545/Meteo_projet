@@ -15,3 +15,4 @@ class IDataStorage(ABC):
     @abstractmethod
     def delete_data(self, key: str) -> None:
         pass
+
