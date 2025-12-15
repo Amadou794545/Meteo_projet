@@ -1,7 +1,4 @@
 import os
-
-from matplotlib import pyplot as plt
-
 from DataPipeline import DataPipeline
 from src.cleaners.DataCleaner import DataCleaner
 from src.collectors.APIDataCollector import APIDataCollector
@@ -14,11 +11,7 @@ import pandas as pd
 
 from utils.ListeChaine import LinkedList
 
-
-
-
 if __name__ == "__main__":
-
 
     # Initialisation de la liste chaînée
     stations_data = LinkedList()
@@ -72,7 +65,6 @@ if __name__ == "__main__":
 
         print("Initialisation du visualizer...")
         visualizer = Visualizer()
-
         # Initialiser et exécuter le pipeline
         print("Exécution du pipeline de données...")
 
@@ -87,9 +79,6 @@ if __name__ == "__main__":
         print("Résultat de la première ligne du pipeline :")
         print(result)
 
-
-    # Afficher les données collectées
-    stations_data.display()
 
     # Créer une station
 
