@@ -1,11 +1,21 @@
 class APIClient:
+    _instance = None
+
+    def __new__(cls, base_url, limit=100):
+        if cls._instance is None:
+            cls._instance = super(APIClient, cls).__new__(cls)
+            cls._instance.__initialized = False
+        return cls._instance
+
     def __init__(self, base_url, limit=100):
-        self.base_url = base_url
-        self.params = {
-            "limit": limit,
-            "select": "id,type_de_station,temperature_en_degre_c,pluie,humidite,pression,heure_de_paris",
-            "order_by": "heure_de_paris DESC"
-        }
+        if not self.__initialized:
+            self.base_url = base_url
+            self.params = {
+                "limit": limit,
+                "select": "id,type_de_station,temperature_en_degre_c,pluie,humidite,pression,heure_de_paris",
+                "order_by": "heure_de_paris DESC"
+            }
+            self.__initialized = True
 
 
 STATIONS = {

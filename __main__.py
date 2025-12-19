@@ -1,5 +1,5 @@
 import os
-from DataPipeline import DataPipeline
+from DataPipeline import  DataPipelineBuilder
 from src.cleaners.DataCleaner import DataCleaner
 from src.collectors.APIDataCollector import APIDataCollector
 from src.models.MesureMeteo import MesureMeteo
@@ -65,17 +65,20 @@ if __name__ == "__main__":
 
         print("Initialisation du visualizer...")
         visualizer = Visualizer()
+
         # Initialiser et exécuter le pipeline
         print("Exécution du pipeline de données...")
 
-        pipeline = DataPipeline(
-            collector=collector,
-            cleaner=cleaner,
-            storage=storage,
-            visualizer=visualizer
-        )
+        pipeline_builder = DataPipelineBuilder()
 
-        result = pipeline.run(output_path="output.csv")
+        pipeline = (pipeline_builder
+                    .set_collector(collector)
+                    .set_cleaner(cleaner)
+                    .set_storage(storage)
+                    .set_visualizer(visualizer)
+                    .build())
+
+        result = pipeline.run()
         print("Résultat de la première ligne du pipeline :")
         print(result)
 
@@ -91,3 +94,4 @@ if __name__ == "__main__":
         print(f"⚠️ Le fichier '{file_path}' n'existe pas. Aucune opération effectuée.")
 
     print("---------------------✅ Pipeline exécuté pour toutes les stations avec succès.------------------")
+
