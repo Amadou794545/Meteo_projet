@@ -1,5 +1,6 @@
 import os
-from DataPipeline import  DataPipelineBuilder
+from queue import Queue  # Import de la file
+from DataPipeline import DataPipelineBuilder
 from src.cleaners.DataCleaner import DataCleaner
 from src.collectors.APIDataCollector import APIDataCollector
 from src.models.MesureMeteo import MesureMeteo
@@ -16,8 +17,18 @@ if __name__ == "__main__":
     # Initialisation de la liste chaînée
     stations_data = LinkedList()
 
-    # Parcourir toutes les stations disponibles
+    # Initialisation de la file pour gérer les stations à traiter
+    stations_queue = Queue()
+
+    # Ajouter toutes les stations à la file
     for station_name, station_url in STATIONS.items():
+        stations_queue.put((station_name, station_url))
+
+    # Parcourir les stations dans la file
+    while not stations_queue.empty():
+        # Récupérer la station suivante dans la file
+        station_name, station_url = stations_queue.get()
+
         print(f"----------------Collecte des données pour la station : {station_name}----------------")
 
         # Initialisation du client API et du collecteur
@@ -37,7 +48,6 @@ if __name__ == "__main__":
             name=station_name,
             type=rows['type_de_station'],
             url=STATIONS[station_name])
-
             for _, rows in data.iterrows()
         ]
 
@@ -82,9 +92,7 @@ if __name__ == "__main__":
         print("Résultat de la première ligne du pipeline :")
         print(result)
 
-
-    # Créer une station
-
+    # Supprimer les doublons dans le fichier CSV
     file_path = "data/cleaned_data.csv"
     if os.path.exists(file_path):
         df = pd.read_csv(file_path)
@@ -95,3 +103,4 @@ if __name__ == "__main__":
 
     print("---------------------✅ Pipeline exécuté pour toutes les stations avec succès.------------------")
 
+#design patterns

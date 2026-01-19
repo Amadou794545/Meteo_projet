@@ -32,7 +32,6 @@ class DataPipeline:
         print("✅ Pipeline exécuté avec succès.")
 
 
-
 class DataPipelineBuilder:
     def __init__(self):
         self.collector = None
