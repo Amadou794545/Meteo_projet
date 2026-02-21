@@ -1,106 +1,152 @@
+"""Entry point for the weather data pipeline CLI."""
+
+import argparse
 import os
-from queue import Queue  # Import de la file
-from DataPipeline import DataPipelineBuilder
-from src.cleaners.DataCleaner import DataCleaner
-from src.collectors.APIDataCollector import APIDataCollector
-from src.models.MesureMeteo import MesureMeteo
-from src.models.StationMeteo import StationMeteo
-from src.storage.CSVStorage import CSVStorage
-from src.visualizers.Visualizer import Visualizer
-from utils.APIClient import APIClient, STATIONS
-import pandas as pd
+from queue import Queue
 
-from utils.ListeChaine import LinkedList
+from utils.APIClient import STATIONS
 
-if __name__ == "__main__":
 
-    # Initialisation de la liste chaînée
+def _parse_args():
+    """Parse CLI options for station selection."""
+    parser = argparse.ArgumentParser(description="Pipeline météo Toulouse Métropole")
+    parser.add_argument(
+        "--stations",
+        nargs="+",
+        default=["all"],
+        help=(
+            "Liste des stations à traiter (séparées par des espaces). "
+            "Exemple: --stations montaudran pech-david. "
+            "Utiliser 'all' pour toutes les stations."
+        ),
+    )
+    parser.add_argument(
+        "--list-stations",
+        action="store_true",
+        help="Affiche les stations disponibles puis quitte.",
+    )
+    return parser.parse_args()
+
+
+def _select_stations(selected_station_names):
+    """Validate and return selected stations as a name/url mapping."""
+    available_station_names = set(STATIONS.keys())
+
+    if "all" in selected_station_names:
+        return STATIONS
+
+    invalid_station_names = [
+        station_name
+        for station_name in selected_station_names
+        if station_name not in available_station_names
+    ]
+
+    if invalid_station_names:
+        raise ValueError(
+            "Stations inconnues: "
+            f"{', '.join(invalid_station_names)}. "
+            f"Stations disponibles: {', '.join(STATIONS.keys())}"
+        )
+
+    return {
+        station_name: STATIONS[station_name]
+        for station_name in selected_station_names
+    }
+
+
+def _process_stations(selected_stations):
+    """Run the existing pipeline for each selected station."""
+    from DataPipeline import DataPipelineBuilder
+    from src.cleaners.DataCleaner import DataCleaner
+    from src.collectors.APIDataCollector import APIDataCollector
+    from src.storage.CSVStorage import CSVStorage
+    from src.visualizers.Visualizer import Visualizer
+    from utils.APIClient import APIClient
+    from utils.ListeChaine import LinkedList
+
     stations_data = LinkedList()
-
-    # Initialisation de la file pour gérer les stations à traiter
     stations_queue = Queue()
 
-    # Ajouter toutes les stations à la file
-    for station_name, station_url in STATIONS.items():
+    for station_name, station_url in selected_stations.items():
         stations_queue.put((station_name, station_url))
 
-    # Parcourir les stations dans la file
     while not stations_queue.empty():
-        # Récupérer la station suivante dans la file
         station_name, station_url = stations_queue.get()
 
-        print(f"----------------Collecte des données pour la station : {station_name}----------------")
+        print(
+            "----------------Collecte des données pour la station : "
+            f"{station_name}----------------"
+        )
 
-        # Initialisation du client API et du collecteur
         client = APIClient(station_url)
         collector = APIDataCollector(client)
 
-        # Collecter les données
         data = collector.collect_data()
-        data['nom_station'] = station_name
-
-        # Ajouter les données à la liste chaînée
+        data["nom_station"] = station_name
         stations_data.append(station_name, data)
 
-        print("Création de l'objet StationMeteo...")
-        station = [StationMeteo(
-            id=rows['id'],
-            name=station_name,
-            type=rows['type_de_station'],
-            url=STATIONS[station_name])
-            for _, rows in data.iterrows()
-        ]
-
-        # Transformer les données en objets MesureMeteo
-        print("Transformation des données en objets MesureMeteo...")
-        mesures = [
-            MesureMeteo(
-                temperature=row['temperature_en_degre_c'],
-                pluie=row['pluie'],
-                humidite=row['humidite'],
-                pression=row['pression'],
-                dataHeure=row['heure_de_paris']
-            )
-            for _, row in data.iterrows()
-        ]
-        # convertir mesures en dataframe pandas
-        df_mesures = pd.DataFrame([vars(mesure) for mesure in mesures])
-
-        # Initialisation du nettoyeur de données
         print("Initialisation du DataCleaner...")
         cleaner = DataCleaner(station_name=station_name)
 
-        print("sauvegarde des données nettoyées...")
+        print("Sauvegarde des données nettoyées...")
         storage = CSVStorage(file_path="data/cleaned_data.csv", collector=collector)
 
         print("Initialisation du visualizer...")
         visualizer = Visualizer()
 
-        # Initialiser et exécuter le pipeline
         print("Exécution du pipeline de données...")
-
-        pipeline_builder = DataPipelineBuilder()
-
-        pipeline = (pipeline_builder
-                    .set_collector(collector)
-                    .set_cleaner(cleaner)
-                    .set_storage(storage)
-                    .set_visualizer(visualizer)
-                    .build())
+        pipeline = (
+            DataPipelineBuilder()
+            .set_collector(collector)
+            .set_cleaner(cleaner)
+            .set_storage(storage)
+            .set_visualizer(visualizer)
+            .build()
+        )
 
         result = pipeline.run()
         print("Résultat de la première ligne du pipeline :")
         print(result)
 
-    # Supprimer les doublons dans le fichier CSV
-    file_path = "data/cleaned_data.csv"
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path)
-        df.drop_duplicates(inplace=True)
-        df.to_csv(file_path, index=False)
-    else:
+
+def _deduplicate_output_csv(file_path="data/cleaned_data.csv"):
+    """Drop duplicate rows from the target CSV file if it exists."""
+    if not os.path.exists(file_path):
         print(f"⚠️ Le fichier '{file_path}' n'existe pas. Aucune opération effectuée.")
+        return
 
-    print("---------------------✅ Pipeline exécuté pour toutes les stations avec succès.------------------")
+    import pandas as pd
 
-#design patterns
+    dataframe = pd.read_csv(file_path)
+    dataframe.drop_duplicates(inplace=True)
+    dataframe.to_csv(file_path, index=False)
+
+
+def main():
+    """CLI main function."""
+    args = _parse_args()
+
+    if args.list_stations:
+        print("Stations disponibles:")
+        for station_name in STATIONS.keys():
+            print(f"- {station_name}")
+        return
+
+    selected_station_names = [station.lower() for station in args.stations]
+
+    try:
+        selected_stations = _select_stations(selected_station_names)
+    except ValueError as error:
+        raise SystemExit(f"❌ {error}") from error
+
+    _process_stations(selected_stations)
+    _deduplicate_output_csv()
+
+    print(
+        "---------------------✅ Pipeline exécuté pour toutes les stations "
+        "avec succès.------------------"
+    )
+
+
+if __name__ == "__main__":
+    main()

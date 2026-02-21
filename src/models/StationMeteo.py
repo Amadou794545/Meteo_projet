@@ -1,8 +1,13 @@
+"""Domain model for a weather station."""
 
-class StationMeteo:
-    def __init__(self, id, name: str, type: str, url: str):
-        self.id = id
-        self.name = name
-        self.type = type
-        self.url = url
+from dataclasses import dataclass
 
+
+@dataclass
+class StationMeteo:  # pylint: disable=too-few-public-methods
+    """Metadata describing a weather station source."""
+
+    station_id: str
+    name: str
+    station_type: str
+    url: str

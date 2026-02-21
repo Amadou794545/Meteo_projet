@@ -1,9 +1,11 @@
+"""Abstract collector contract."""
+
 from abc import ABC, abstractmethod
-import pandas as pd
 
 
-class IDataCollector(ABC):
+class IDataCollector(ABC):  # pylint: disable=too-few-public-methods
+    """Interface for data collector components."""
+
     @abstractmethod
     def collect_data(self):
-        pass
-
+        """Collect data and return it in a concrete representation."""

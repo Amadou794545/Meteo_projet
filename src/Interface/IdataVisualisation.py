@@ -1,8 +1,11 @@
+"""Abstract visualizer contract."""
+
 from abc import ABC, abstractmethod
-import pandas as pd
 
 
-class IDataVisualisation(ABC):
+class IDataVisualisation(ABC):  # pylint: disable=too-few-public-methods
+    """Interface for data visualization components."""
+
     @abstractmethod
     def visualize(self, data):
-        pass
+        """Display or render data."""

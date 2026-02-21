@@ -1,24 +1,27 @@
+"""Abstract cleaner contract."""
+
 from abc import ABC, abstractmethod
-import pandas as pd
 
 
-class IDataCleaner(ABC):
+class IDataCleaner(ABC):  # pylint: disable=too-few-public-methods
+    """Interface for weather data cleaning components."""
+
     @abstractmethod
     def clean_data(self, data):
-        pass
+        """Run the full cleaning process on the given data."""
 
     @abstractmethod
     def _remove_doublons(self, data):
-        pass
+        """Remove duplicate records."""
 
     @abstractmethod
     def _remove_missing_values(self, data):
-        pass
+        """Remove records with missing values."""
 
     @abstractmethod
     def _filter_outliers(self, data):
-        pass
+        """Filter out anomalous records."""
 
     @abstractmethod
     def _separate_date_time(self, data):
-        pass
+        """Split datetime information into date and time columns."""

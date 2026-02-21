@@ -1,11 +1,15 @@
+"""Domain model for a weather measurement."""
+
+from dataclasses import dataclass
 from datetime import datetime
 
 
-class MesureMeteo:
-    def __init__(self, temperature: float, humidite: float, pression: float , pluie: float, dataHeure: datetime):
-        self.temperature = temperature
-        self.humidite = humidite
-        self.pression = pression
-        self.dataHeure = dataHeure
-        self.pluie = pluie
+@dataclass
+class MesureMeteo:  # pylint: disable=too-few-public-methods
+    """Single weather measurement captured at a specific time."""
 
+    temperature: float
+    humidite: float
+    pression: float
+    pluie: float
+    data_heure: datetime
