@@ -54,14 +54,7 @@ pip install pandas requests
 Depuis la racine du projet :
 
 ```bash
-# Toutes les stations
 python __main__.py
-
-# Une ou plusieurs stations précises
-python __main__.py --stations montaudran pech-david
-
-# Afficher la liste des stations disponibles
-python __main__.py --list-stations
 ```
 
 Le pipeline :
